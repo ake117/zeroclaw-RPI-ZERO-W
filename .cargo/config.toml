@@ -18,9 +18,15 @@ rustflags = ["-C", "link-arg=-static"]
 rustflags = ["-C", "link-arg=-static"]
 
 # ARMv6 musl (Raspberry Pi Zero W) — built-in Rust target, cross-linker required
+# Toolchain: ~/arm-linux-musleabihf-cross (from musl.cc)
+# Build: CC_arm_unknown_linux_musleabihf=~/arm-linux-musleabihf-cross/bin/arm-linux-musleabihf-gcc
 [target.arm-unknown-linux-musleabihf]
-linker = "arm-linux-gnueabihf-gcc"
+linker = "arm-linux-musleabihf-gcc"
 rustflags = ["-C", "link-arg=-static"]
+
+[env]
+CC_arm_unknown_linux_musleabihf = { value = "arm-linux-musleabihf-gcc", relative = false }
+AR_arm_unknown_linux_musleabihf = { value = "arm-linux-musleabihf-ar", relative = false }
 
 # Android targets (Termux-native defaults).
 # CI/NDK cross builds can override these via CARGO_TARGET_*_LINKER.
