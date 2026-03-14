@@ -61,6 +61,24 @@ urlencoding = "2.1"
 # HTML to plain text conversion (web_fetch tool)
 nanohtml2text = "0.2"
 
+# ZIP archive handling (skills install/audit)
+zip = "2"
+
+# Temp file/dir utilities
+tempfile = "3.26"
+
+# Terminal UI (onboard TUI)
+crossterm = "0.28"
+ratatui = { version = "0.29", default-features = false, features = ["crossterm"] }
+
+# Fast string search (security prompt guard)
+aho-corasick = "1"
+
+# WASM plugin runtime
+wasmtime = { version = "36.0.6", default-features = false, features = ["runtime", "cranelift"] }
+wasmtime-wasi = { version = "36.0.6", optional = true, default-features = false, features = ["preview1"] }
+wasmi = { version = "1.0.9", optional = true, default-features = true }
+
 # Optional Rust-native browser automation backend
 fantoccini = { version = "0.22.1", optional = true, default-features = false, features = ["rustls-tls"] }
 
@@ -212,6 +230,10 @@ metrics = ["observability-prometheus"]
 probe = ["dep:probe-rs"]
 # rag-pdf = PDF ingestion for datasheet RAG
 rag-pdf = ["dep:pdf-extract"]
+# runtime-wasm = in-process WASM sandbox via wasmi
+runtime-wasm = ["dep:wasmi"]
+# wasm-tools = wasmtime-wasi preview1 support
+wasm-tools = ["dep:wasmtime-wasi"]
 # whatsapp-web = Native WhatsApp Web client with custom rusqlite storage backend
 whatsapp-web = ["dep:wa-rs", "dep:wa-rs-core", "dep:wa-rs-binary", "dep:wa-rs-proto", "dep:wa-rs-ureq-http", "dep:wa-rs-tokio-transport", "dep:serde-big-array", "dep:prost", "dep:qrcode"]
 
@@ -242,7 +264,6 @@ strip = true
 panic = "abort"
 
 [dev-dependencies]
-tempfile = "3.26"
 criterion = { version = "0.8", features = ["async_tokio"] }
 wiremock = "0.6"
 scopeguard = "1.2"

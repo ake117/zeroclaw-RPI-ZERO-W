@@ -1,4 +1,5 @@
 #![warn(clippy::all, clippy::pedantic)]
+#![recursion_limit = "256"]
 #![allow(
     clippy::assigning_clones,
     clippy::bool_to_int_with_if,
@@ -71,6 +72,7 @@ mod multimodal;
 mod observability;
 mod onboard;
 mod peripherals;
+mod plugins;
 mod providers;
 mod runtime;
 mod security;
@@ -654,6 +656,15 @@ enum MemoryCommands {
         /// Skip confirmation prompt
         #[arg(long)]
         yes: bool,
+    },
+    /// Rebuild vector embeddings index for all memory entries
+    Reindex {
+        /// Skip confirmation prompt
+        #[arg(long)]
+        yes: bool,
+        /// Show per-entry progress
+        #[arg(long)]
+        progress: bool,
     },
 }
 

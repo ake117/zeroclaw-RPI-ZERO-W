@@ -32,7 +32,13 @@ pub fn create_observer(config: &ObservabilityConfig) -> Box<dyn Observer> {
         "prometheus" => {
             #[cfg(feature = "observability-prometheus")]
             {
-                Box::new(PrometheusObserver::new())
+                match PrometheusObserver::new() {
+                    Ok(obs) => Box::new(obs),
+                    Err(e) => {
+                        tracing::warn!("Failed to initialize Prometheus observer: {e}; falling back to noop.");
+                        Box::new(NoopObserver)
+                    }
+                }
             }
             #[cfg(not(feature = "observability-prometheus"))]
             {

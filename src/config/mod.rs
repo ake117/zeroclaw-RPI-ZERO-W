@@ -4,21 +4,33 @@ pub mod traits;
 #[allow(unused_imports)]
 pub use schema::{
     apply_runtime_proxy_to_builder, build_runtime_proxy_client,
-    build_runtime_proxy_client_with_timeouts, runtime_proxy_config, set_runtime_proxy_config,
-    AgentConfig, AuditConfig, AutonomyConfig, BrowserComputerUseConfig, BrowserConfig,
-    BuiltinHooksConfig, ChannelsConfig, ClassificationRule, ComposioConfig, Config, CostConfig,
+    build_runtime_proxy_client_with_timeouts, default_model_fallback_for_provider,
+    resolve_default_model_id, runtime_proxy_config, set_runtime_proxy_config,
+    AgentConfig, AgentLoadBalanceStrategy, AgentSessionBackend, AgentSessionConfig,
+    AgentSessionStrategy, AgentTeamsConfig, AuditConfig, AutonomyConfig,
+    BrowserComputerUseConfig, BrowserConfig,
+    BuiltinHooksConfig, ChannelsConfig, ClassificationRule, CommandContextRuleAction,
+    CommandContextRuleConfig, ComposioConfig, Config, CostConfig,
     CronConfig, DelegateAgentConfig, DiscordConfig, DockerRuntimeConfig, EdgeTtsConfig,
     ElevenLabsTtsConfig, EmbeddingRouteConfig, EstopConfig, FeishuConfig, GatewayConfig,
-    GoogleTtsConfig, HardwareConfig, HardwareTransport, HeartbeatConfig, HooksConfig,
-    HttpRequestConfig, IMessageConfig, IdentityConfig, LarkConfig, MatrixConfig, McpConfig,
+    GitHubConfig, GoogleTtsConfig, GroupReplyConfig, GroupReplyMode, HardwareConfig,
+    HardwareTransport, HeartbeatConfig, HooksConfig,
+    HttpRequestConfig, HttpRequestCredentialProfile, IMessageConfig, IdentityConfig,
+    LarkConfig, MatrixConfig, McpConfig,
     McpServerConfig, McpTransport, MemoryConfig, ModelRouteConfig, MultimodalConfig,
-    NextcloudTalkConfig, NodesConfig, ObservabilityConfig, OpenAiTtsConfig, OtpConfig, OtpMethod,
-    PeripheralBoardConfig, PeripheralsConfig, ProxyConfig, ProxyScope, QdrantConfig,
-    QueryClassificationConfig, ReliabilityConfig, ResourceLimitsConfig, RuntimeConfig,
-    SandboxBackend, SandboxConfig, SchedulerConfig, SecretsConfig, SecurityConfig, SkillsConfig,
-    SkillsPromptInjectionMode, SlackConfig, StorageConfig, StorageProviderConfig,
-    StorageProviderSection, StreamMode, TelegramConfig, ToolFilterGroup, ToolFilterGroupMode,
-    TranscriptionConfig, TtsConfig, TunnelConfig, WebFetchConfig, WebSearchConfig, WebhookConfig,
+    NapcatConfig, NextcloudTalkConfig, NonCliNaturalLanguageApprovalMode, NodesConfig,
+    ObservabilityConfig, OpenAiTtsConfig, OtpConfig, OtpMethod,
+    PeripheralBoardConfig, PeripheralsConfig, PerplexityFilterConfig,
+    PluginEntryConfig, PluginsConfig, ProgressMode, ProxyConfig, ProxyScope, QdrantConfig,
+    QQEnvironment, QueryClassificationConfig, ReliabilityConfig, ResearchPhaseConfig,
+    ResearchTrigger, ResourceLimitsConfig, RuntimeConfig,
+    SandboxBackend, SandboxConfig, SchedulerConfig, SecretsConfig, SecurityConfig,
+    SecurityRoleConfig, SkillsConfig, SkillsPromptInjectionMode, SlackConfig, StorageConfig,
+    StorageProviderConfig, StorageProviderSection, StreamMode, SubAgentsConfig, SyscallAnomalyConfig,
+    TelegramConfig, ToolFilterGroup, ToolFilterGroupMode,
+    TranscriptionConfig, TtsConfig, TunnelConfig, UrlAccessConfig, WebFetchConfig,
+    WebSearchConfig, WebhookConfig, WasmCapabilityEscalationMode, WasmConfig, WasmModuleHashPolicy,
+    WasmRuntimeConfig, WasmSecurityConfig,
 };
 
 pub fn name_and_presence<T: traits::ChannelConfig>(channel: Option<&T>) -> (&'static str, bool) {
@@ -47,6 +59,10 @@ mod tests {
             draft_update_interval_ms: 1000,
             interrupt_on_new_message: false,
             mention_only: false,
+            progress_mode: ProgressMode::default(),
+            group_reply: GroupReplyConfig::default(),
+            base_url: None,
+            ack_enabled: true,
         };
 
         let discord = DiscordConfig {
@@ -55,6 +71,7 @@ mod tests {
             allowed_users: vec![],
             listen_to_bots: false,
             mention_only: false,
+            group_reply: GroupReplyConfig::default(),
         };
 
         let lark = LarkConfig {

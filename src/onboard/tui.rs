@@ -1,7 +1,7 @@
 use crate::config::schema::{CloudflareTunnelConfig, NgrokTunnelConfig};
 use crate::config::{
-    default_model_fallback_for_provider, ChannelsConfig, Config, DiscordConfig, ProgressMode,
-    StreamMode, TelegramConfig, TunnelConfig,
+    default_model_fallback_for_provider, ChannelsConfig, Config, DiscordConfig, GroupReplyConfig,
+    ProgressMode, StreamMode, TelegramConfig, TunnelConfig,
 };
 use crate::onboard::wizard::{run_quick_setup_with_migration, OpenClawOnboardMigrationOptions};
 use anyhow::{bail, Context, Result};
@@ -2277,7 +2277,7 @@ fn apply_channel_overrides(config: &mut Config, plan: &TuiOnboardPlan) {
             interrupt_on_new_message: false,
             mention_only: false,
             progress_mode: ProgressMode::Compact,
-            group_reply: None,
+            group_reply: GroupReplyConfig { mode: None },
             base_url: None,
             ack_enabled: true,
         });
@@ -2295,7 +2295,7 @@ fn apply_channel_overrides(config: &mut Config, plan: &TuiOnboardPlan) {
             allowed_users: parse_csv_list(&plan.discord_allowed_users),
             listen_to_bots: false,
             mention_only: false,
-            group_reply: None,
+            group_reply: GroupReplyConfig { mode: None },
         });
     }
 

@@ -300,7 +300,7 @@ pub fn create_memory_with_storage_and_routes(
             config.keyword_weight as f32,
             config.embedding_cache_size,
             config.sqlite_open_timeout_secs,
-            &config.sqlite_journal_mode,
+            config.sqlite_journal_mode.as_deref().unwrap_or(""),
         )?;
         Ok(mem)
     }

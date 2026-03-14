@@ -18,14 +18,21 @@
 
 pub mod anthropic;
 pub mod azure_openai;
+pub mod backoff;
 pub mod bedrock;
 pub mod compatible;
 pub mod copilot;
+pub mod cursor;
 pub mod gemini;
+pub mod glm;
+pub mod health;
 pub mod ollama;
 pub mod openai;
 pub mod openai_codex;
 pub mod openrouter;
+pub mod quota_adapter;
+pub mod quota_cli;
+pub mod quota_types;
 pub mod reliable;
 pub mod router;
 pub mod telnyx;
@@ -1840,6 +1847,46 @@ pub fn list_providers() -> Vec<ProviderInfo> {
         },
     ]
 }
+
+// ── Compatibility functions restored from upstream merge ─────────
+
+pub(crate) fn is_siliconflow_alias(name: &str) -> bool {
+    matches!(name, "siliconflow" | "silicon-cloud" | "siliconcloud")
+}
+
+pub(crate) fn is_stepfun_alias(name: &str) -> bool {
+    matches!(name, "stepfun" | "step" | "step-ai" | "step_ai")
+}
+
+pub fn has_provider_credential(name: &str, credential_override: Option<&str>) -> bool {
+    resolve_provider_credential(name, credential_override).is_some()
+}
+
+pub(crate) fn has_native_tool_schema_rejection_hint(error: &str) -> bool {
+    let lower = error.to_lowercase();
+    let direct_hints = [
+        "unknown parameter: tools",
+        "unsupported parameter: tools",
+        "unrecognized field `tools`",
+        "does not support tools",
+        "function calling is not supported",
+        "unknown parameter: tool_choice",
+        "unsupported parameter: tool_choice",
+        "unrecognized field `tool_choice`",
+        "invalid parameter: tool_choice",
+    ];
+    if direct_hints.iter().any(|hint| lower.contains(hint)) {
+        return true;
+    }
+    let mapper_tool_schema_hint = lower.contains("mapper")
+        && (lower.contains("tool") || lower.contains("function"))
+        && (lower.contains("schema")
+            || lower.contains("parameter")
+            || lower.contains("validation"));
+    mapper_tool_schema_hint
+}
+
+// ── End compatibility functions ───────────────────────────────────
 
 #[cfg(test)]
 mod tests {

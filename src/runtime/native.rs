@@ -1,4 +1,5 @@
 use super::traits::RuntimeAdapter;
+use std::any::Any;
 use std::path::{Path, PathBuf};
 
 /// Native runtime — full access, runs on Mac/Linux/Windows/Docker/Raspberry Pi
@@ -8,9 +9,30 @@ impl NativeRuntime {
     pub fn new() -> Self {
         Self
     }
+
+    /// Returns the name of the shell kind selected for this runtime, if any.
+    pub(crate) fn selected_shell_kind(&self) -> Option<&'static str> {
+        #[cfg(not(target_os = "windows"))]
+        {
+            Some("sh")
+        }
+        #[cfg(target_os = "windows")]
+        {
+            Some("cmd")
+        }
+    }
+
+    /// Returns the path to the selected shell program.
+    pub(crate) fn selected_shell_program(&self) -> Option<&Path> {
+        None
+    }
 }
 
 impl RuntimeAdapter for NativeRuntime {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
     fn name(&self) -> &str {
         "native"
     }

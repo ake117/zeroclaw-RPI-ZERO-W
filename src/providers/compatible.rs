@@ -1158,6 +1158,9 @@ impl OpenAiCompatibleProvider {
             tool_calls,
             usage: None,
             reasoning_content,
+            quota_metadata: None,
+            stop_reason: None,
+            raw_stop_reason: None,
         }
     }
 
@@ -1497,6 +1500,9 @@ impl Provider for OpenAiCompatibleProvider {
                     tool_calls: vec![],
                     usage: None,
                     reasoning_content: None,
+                    quota_metadata: None,
+                    stop_reason: None,
+                    raw_stop_reason: None,
                 });
             }
         };
@@ -1541,6 +1547,9 @@ impl Provider for OpenAiCompatibleProvider {
             tool_calls,
             usage,
             reasoning_content,
+            quota_metadata: None,
+            stop_reason: None,
+            raw_stop_reason: None,
         })
     }
 
@@ -1596,6 +1605,9 @@ impl Provider for OpenAiCompatibleProvider {
                             tool_calls: vec![],
                             usage: None,
                             reasoning_content: None,
+                            quota_metadata: None,
+                            stop_reason: None,
+                            raw_stop_reason: None,
                         })
                         .map_err(|responses_err| {
                             anyhow::anyhow!(
@@ -1625,6 +1637,9 @@ impl Provider for OpenAiCompatibleProvider {
                     tool_calls: vec![],
                     usage: None,
                     reasoning_content: None,
+                    quota_metadata: None,
+                    stop_reason: None,
+                    raw_stop_reason: None,
                 });
             }
 
@@ -1637,6 +1652,9 @@ impl Provider for OpenAiCompatibleProvider {
                         tool_calls: vec![],
                         usage: None,
                         reasoning_content: None,
+                        quota_metadata: None,
+                        stop_reason: None,
+                        raw_stop_reason: None,
                     })
                     .map_err(|responses_err| {
                         anyhow::anyhow!(

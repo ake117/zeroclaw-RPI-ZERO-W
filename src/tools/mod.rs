@@ -59,6 +59,7 @@ pub mod screenshot;
 pub mod shell;
 pub mod tool_search;
 pub mod traits;
+pub mod url_validation;
 pub mod web_fetch;
 pub mod web_search_tool;
 
@@ -286,6 +287,8 @@ pub fn all_tools_with_runtime(
         tool_arcs.push(Arc::new(BrowserOpenTool::new(
             security.clone(),
             browser_config.allowed_domains.clone(),
+            crate::config::UrlAccessConfig::default(),
+            crate::tools::browser_open::BrowserChoice::Default,
         )));
         // Add full browser automation tool (pluggable backend)
         tool_arcs.push(Arc::new(BrowserTool::new_with_backend(
@@ -293,6 +296,10 @@ pub fn all_tools_with_runtime(
             browser_config.allowed_domains.clone(),
             browser_config.session_name.clone(),
             browser_config.backend.clone(),
+            browser_config.auto_backend_priority.clone(),
+            browser_config.agent_browser_command.clone(),
+            browser_config.agent_browser_extra_args.clone(),
+            browser_config.agent_browser_timeout_ms,
             browser_config.native_headless,
             browser_config.native_webdriver_url.clone(),
             browser_config.native_chrome_path.clone(),
@@ -312,18 +319,26 @@ pub fn all_tools_with_runtime(
         tool_arcs.push(Arc::new(HttpRequestTool::new(
             security.clone(),
             http_config.allowed_domains.clone(),
+            crate::config::UrlAccessConfig::default(),
             http_config.max_response_size,
             http_config.timeout_secs,
+            String::from("zeroclaw"),
+            std::collections::HashMap::new(),
         )));
     }
 
     if web_fetch_config.enabled {
         tool_arcs.push(Arc::new(WebFetchTool::new(
             security.clone(),
+            String::new(),
+            None,
+            None,
             web_fetch_config.allowed_domains.clone(),
             web_fetch_config.blocked_domains.clone(),
+            crate::config::UrlAccessConfig::default(),
             web_fetch_config.max_response_size,
             web_fetch_config.timeout_secs,
+            String::from("zeroclaw"),
         )));
     }
 
@@ -394,6 +409,90 @@ pub fn all_tools_with_runtime(
     };
 
     (boxed_registry_from_arcs(tool_arcs), delegate_handle)
+}
+
+// ── Tool filter utilities (restored for compatibility) ────────────
+
+/// Result of filtering the primary-agent tool registry.
+pub struct PrimaryAgentToolFilterReport {
+    /// `agent.allowed_tools` entries that did not match any registered tool name.
+    pub unmatched_allowed_tools: Vec<String>,
+    /// Number of tools kept after applying `agent.allowed_tools` and before denylist removal.
+    pub allowlist_match_count: usize,
+}
+
+fn matches_tool_rule(rule: &str, tool_name: &str) -> bool {
+    rule == "*" || rule.eq_ignore_ascii_case(tool_name)
+}
+
+/// Filter the primary-agent tool registry based on `[agent]` allow/deny settings.
+pub fn filter_primary_agent_tools(
+    tools: Vec<Box<dyn Tool>>,
+    allowed_tools: &[String],
+    denied_tools: &[String],
+) -> (Vec<Box<dyn Tool>>, PrimaryAgentToolFilterReport) {
+    let normalized_allowed: Vec<String> = allowed_tools
+        .iter()
+        .map(|entry| entry.trim())
+        .filter(|entry| !entry.is_empty())
+        .map(ToOwned::to_owned)
+        .collect();
+    let normalized_denied: Vec<String> = denied_tools
+        .iter()
+        .map(|entry| entry.trim())
+        .filter(|entry| !entry.is_empty())
+        .map(ToOwned::to_owned)
+        .collect();
+
+    let use_allowlist = !normalized_allowed.is_empty();
+    let tool_names: Vec<String> = tools.iter().map(|tool| tool.name().to_string()).collect();
+
+    let unmatched_allowed_tools = if use_allowlist {
+        normalized_allowed
+            .iter()
+            .filter(|allowed| {
+                !tool_names
+                    .iter()
+                    .any(|tool_name| matches_tool_rule(allowed.as_str(), tool_name))
+            })
+            .cloned()
+            .collect()
+    } else {
+        Vec::new()
+    };
+
+    let mut allowlist_match_count = 0usize;
+    let mut filtered = Vec::with_capacity(tools.len());
+    for tool in tools {
+        let tool_name = tool.name();
+
+        if use_allowlist
+            && !normalized_allowed
+                .iter()
+                .any(|rule| matches_tool_rule(rule.as_str(), tool_name))
+        {
+            continue;
+        }
+        if use_allowlist {
+            allowlist_match_count += 1;
+        }
+
+        if normalized_denied
+            .iter()
+            .any(|rule| matches_tool_rule(rule.as_str(), tool_name))
+        {
+            continue;
+        }
+        filtered.push(tool);
+    }
+
+    (
+        filtered,
+        PrimaryAgentToolFilterReport {
+            unmatched_allowed_tools,
+            allowlist_match_count,
+        },
+    )
 }
 
 #[cfg(test)]

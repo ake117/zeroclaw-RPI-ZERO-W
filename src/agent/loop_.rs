@@ -1,3 +1,6 @@
+pub mod detection;
+pub mod history;
+
 use crate::approval::{ApprovalManager, ApprovalRequest, ApprovalResponse};
 use crate::config::Config;
 use crate::memory::{self, Memory, MemoryCategory};

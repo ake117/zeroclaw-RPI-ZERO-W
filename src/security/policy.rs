@@ -92,6 +92,7 @@ pub struct SecurityPolicy {
     pub block_high_risk_commands: bool,
     pub shell_env_passthrough: Vec<String>,
     pub tracker: ActionTracker,
+    pub allow_sensitive_file_writes: bool,
 }
 
 /// Default allowed commands for Unix platforms.
@@ -201,6 +202,7 @@ impl Default for SecurityPolicy {
             block_high_risk_commands: true,
             shell_env_passthrough: vec![],
             tracker: ActionTracker::new(),
+            allow_sensitive_file_writes: false,
         }
     }
 }
@@ -1250,6 +1252,19 @@ impl SecurityPolicy {
             block_high_risk_commands: autonomy_config.block_high_risk_commands,
             shell_env_passthrough: autonomy_config.shell_env_passthrough.clone(),
             tracker: ActionTracker::new(),
+            allow_sensitive_file_writes: autonomy_config.allow_sensitive_file_writes,
+        }
+    }
+
+    /// Resolve a user-supplied path argument: absolute paths remain absolute,
+    /// relative paths are resolved relative to the workspace directory.
+    /// Tilde (`~`) expansion is applied first.
+    pub fn resolve_user_supplied_path(&self, path: &str) -> PathBuf {
+        let expanded = expand_user_path(path);
+        if expanded.is_absolute() {
+            expanded
+        } else {
+            self.workspace_dir.join(expanded)
         }
     }
 }

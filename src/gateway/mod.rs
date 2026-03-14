@@ -270,6 +270,28 @@ fn client_key_from_request(
         .unwrap_or_else(|| "unknown".to_string())
 }
 
+fn request_ip_from_request(
+    peer_addr: Option<SocketAddr>,
+    headers: &HeaderMap,
+    trust_forwarded_headers: bool,
+) -> Option<IpAddr> {
+    if trust_forwarded_headers {
+        if let Some(ip) = forwarded_client_ip(headers) {
+            return Some(ip);
+        }
+    }
+    peer_addr.map(|addr| addr.ip())
+}
+
+pub(crate) fn is_loopback_request(
+    peer_addr: Option<SocketAddr>,
+    headers: &HeaderMap,
+    trust_forwarded_headers: bool,
+) -> bool {
+    request_ip_from_request(peer_addr, headers, trust_forwarded_headers)
+        .is_some_and(|ip| ip.is_loopback())
+}
+
 fn normalize_max_keys(configured: usize, fallback: usize) -> usize {
     if configured == 0 {
         fallback.max(1)

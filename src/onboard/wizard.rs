@@ -177,6 +177,9 @@ pub async fn run_wizard(force: bool) -> Result<Config> {
         tts: crate::config::TtsConfig::default(),
         mcp: crate::config::McpConfig::default(),
         nodes: crate::config::NodesConfig::default(),
+        plugins: crate::config::PluginsConfig::default(),
+        research: crate::config::ResearchPhaseConfig::default(),
+        wasm: crate::config::WasmConfig::default(),
     };
 
     println!(
@@ -396,6 +399,7 @@ fn memory_config_defaults_for_backend(backend: &str) -> MemoryConfig {
         snapshot_on_hygiene: false,
         auto_hydrate: true,
         sqlite_open_timeout_secs: None,
+        sqlite_journal_mode: None,
         qdrant: crate::config::QdrantConfig::default(),
     }
 }
@@ -535,6 +539,9 @@ async fn run_quick_setup_with_home(
         tts: crate::config::TtsConfig::default(),
         mcp: crate::config::McpConfig::default(),
         nodes: crate::config::NodesConfig::default(),
+        plugins: crate::config::PluginsConfig::default(),
+        research: crate::config::ResearchPhaseConfig::default(),
+        wasm: crate::config::WasmConfig::default(),
     };
 
     config.save().await?;
@@ -3640,6 +3647,10 @@ fn setup_channels() -> Result<ChannelsConfig> {
                     draft_update_interval_ms: 1000,
                     interrupt_on_new_message: false,
                     mention_only: false,
+                    progress_mode: crate::config::ProgressMode::default(),
+                    group_reply: crate::config::GroupReplyConfig { mode: None },
+                    base_url: None,
+                    ack_enabled: true,
                 });
             }
             ChannelMenuChoice::Discord => {
@@ -3739,6 +3750,7 @@ fn setup_channels() -> Result<ChannelsConfig> {
                     allowed_users,
                     listen_to_bots: false,
                     mention_only: false,
+                    group_reply: crate::config::GroupReplyConfig { mode: None },
                 });
             }
             ChannelMenuChoice::Slack => {
@@ -5745,6 +5757,51 @@ fn print_summary(config: &Config) {
         style("Happy hacking! 🦀").white().bold()
     );
     println!();
+}
+
+// ── Migration-aware onboarding variants ──────────────────────────────────────
+
+/// Options controlling migration behaviour during onboarding.
+///
+/// Currently a unit struct; fields will be added as migration features land.
+#[derive(Debug, Clone, Default)]
+pub struct OpenClawOnboardMigrationOptions {
+    /// When `true`, skip TOTP setup even if the provider would normally enable it.
+    pub skip_totp: bool,
+}
+
+/// Like [`run_wizard`] but accepts migration options for forward-compatible onboarding.
+///
+/// Currently delegates to [`run_wizard`]; the `migration_options` parameter is
+/// reserved for future migration logic.
+pub async fn run_wizard_with_migration(
+    force: bool,
+    _migration_options: OpenClawOnboardMigrationOptions,
+) -> Result<Config> {
+    run_wizard(force).await
+}
+
+/// Like [`run_quick_setup`] but accepts a `disable_totp` flag and migration options.
+///
+/// The `disable_totp` and `migration_options` parameters are reserved for
+/// future migration logic; this currently delegates to [`run_quick_setup`].
+pub async fn run_quick_setup_with_migration(
+    credential_override: Option<&str>,
+    provider: Option<&str>,
+    model_override: Option<&str>,
+    memory_backend: Option<&str>,
+    force: bool,
+    _disable_totp: bool,
+    _migration_options: OpenClawOnboardMigrationOptions,
+) -> Result<Config> {
+    run_quick_setup(
+        credential_override,
+        provider,
+        model_override,
+        memory_backend,
+        force,
+    )
+    .await
 }
 
 #[cfg(test)]
