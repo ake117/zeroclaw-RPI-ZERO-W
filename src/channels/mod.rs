@@ -2910,6 +2910,7 @@ fn build_channel_by_id(config: &Config, channel_id: &str) -> Result<Arc<dyn Chan
                     tg.bot_token.clone(),
                     tg.allowed_users.clone(),
                     tg.mention_only,
+                    tg.ack_enabled,
                 )
                 .with_streaming(tg.stream_mode, tg.draft_update_interval_ms)
                 .with_transcription(config.transcription.clone())
@@ -3005,6 +3006,7 @@ fn collect_configured_channels(
                     tg.bot_token.clone(),
                     tg.allowed_users.clone(),
                     tg.mention_only,
+                    tg.ack_enabled,
                 )
                 .with_streaming(tg.stream_mode, tg.draft_update_interval_ms)
                 .with_transcription(config.transcription.clone())
